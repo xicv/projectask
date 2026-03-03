@@ -65,16 +65,16 @@ The `/projectask` command runs a 5-phase pipeline:
 Clone the repo and symlink into your `~/.claude` directory:
 
 ```bash
-git clone https://github.com/xicv/projectask.git ~/Projects/projectasks
+git clone https://github.com/xicv/projectask.git ~/Projects/projectask
 
 # Symlink the commands
-ln -s ~/Projects/projectasks/commands/projectask.md ~/.claude/commands/projectask.md
-ln -s ~/Projects/projectasks/commands/projectask-list.md ~/.claude/commands/projectask-list.md
-ln -s ~/Projects/projectasks/commands/projectask-start.md ~/.claude/commands/projectask-start.md
-ln -s ~/Projects/projectasks/commands/projectask-done.md ~/.claude/commands/projectask-done.md
+ln -s ~/Projects/projectask/commands/projectask.md ~/.claude/commands/projectask.md
+ln -s ~/Projects/projectask/commands/projectask-list.md ~/.claude/commands/projectask-list.md
+ln -s ~/Projects/projectask/commands/projectask-start.md ~/.claude/commands/projectask-start.md
+ln -s ~/Projects/projectask/commands/projectask-done.md ~/.claude/commands/projectask-done.md
 
 # Symlink the auto-triggered skill
-ln -s ~/Projects/projectasks/skills/projectask ~/.claude/skills/projectask
+ln -s ~/Projects/projectask/skills/projectask ~/.claude/skills/projectask
 ```
 
 ## Structure
