@@ -1,4 +1,4 @@
-# projectasks
+# projectask
 
 A Claude Code skill that transforms rough ideas into professional, engineering-level task markdown files.
 
@@ -28,19 +28,19 @@ A Claude Code skill that transforms rough ideas into professional, engineering-l
 Clone the repo and symlink into your `~/.claude` directory:
 
 ```bash
-git clone https://github.com/xicv/projectasks.git ~/Projects/projectasks
+git clone https://github.com/xicv/projectask.git ~/Projects/projectask
 
 # Symlink the slash command
-ln -s ~/Projects/projectasks/commands/projectask.md ~/.claude/commands/projectask.md
+ln -s ~/Projects/projectask/commands/projectask.md ~/.claude/commands/projectask.md
 
 # Symlink the auto-triggered skill
-ln -s ~/Projects/projectasks/skills/projectask ~/.claude/skills/projectask
+ln -s ~/Projects/projectask/skills/projectask ~/.claude/skills/projectask
 ```
 
 ## Structure
 
 ```
-projectasks/
+projectask/
 ├── commands/
 │   └── projectask.md              # Slash command (/projectask)
 ├── skills/
