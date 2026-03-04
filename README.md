@@ -97,19 +97,15 @@ A Claude Code skill that transforms rough ideas into professional, engineering-l
 
 ## Installation
 
-Clone the repo and symlink into your `~/.claude` directory:
-
 ```bash
 git clone https://github.com/xicv/projectask.git ~/Projects/projectask
+~/Projects/projectask/install.sh
+```
 
-# Symlink the commands
-ln -s ~/Projects/projectask/commands/projectask.md ~/.claude/commands/projectask.md
-ln -s ~/Projects/projectask/commands/projectask-list.md ~/.claude/commands/projectask-list.md
-ln -s ~/Projects/projectask/commands/projectask-start.md ~/.claude/commands/projectask-start.md
-ln -s ~/Projects/projectask/commands/projectask-done.md ~/.claude/commands/projectask-done.md
+To uninstall:
 
-# Symlink the auto-triggered skill
-ln -s ~/Projects/projectask/skills/projectask ~/.claude/skills/projectask
+```bash
+~/Projects/projectask/install.sh uninstall
 ```
 
 ## How It Works
@@ -126,6 +122,7 @@ The `/projectask` command runs a 5-phase pipeline:
 
 ```
 projectask/
+├── install.sh                     # Installer (symlinks commands + skill)
 ├── commands/
 │   ├── projectask.md              # Create task files (/projectask)
 │   ├── projectask-list.md         # List and query tasks (/projectask-list)
