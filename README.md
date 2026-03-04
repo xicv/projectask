@@ -4,24 +4,14 @@ A Claude Code skill that transforms rough ideas into professional, engineering-l
 
 ## Features
 
-- **Dual-mode:** Available as a slash command (`/projectask`) and as an auto-triggered skill
+- **Dual-mode:** Available as slash commands (`/projectask`, etc.) and as an auto-triggered skill
 - **5-phase pipeline:** Parse → Analyze → Gather Context → Think & Generate → Verify & Write
 - **YAML metadata:** Status, priority, timestamps, due dates, and tags in every task file
 - **Smart file naming:** `task<NNN>-<kebab-slug>.md` with auto-increment and title-derived slugs
 - **Project-aware:** Gathers context from `CLAUDE.md`, `package.json`, tech stack detection, and relevant source files
 - **Rich output:** Objective, Context, Assumptions, Requirements, Acceptance Criteria, Out of Scope, Dependencies, Testing Strategy, and Technical Notes
 - **Task lifecycle:** Create → Start → Done with `/projectask`, `/projectask-start`, `/projectask-done`
-- **Task listing:** Query, filter, and summarize tasks with `/projectask-list`
-
-## How It Works
-
-The `/projectask` command runs a 5-phase pipeline:
-
-1. **Parse** — Extract output path and task description from arguments
-2. **Analyze** — Identify task type, check for ambiguity, assess scope
-3. **Gather Context** — Read project config, CLAUDE.md, tech stack, relevant source files
-4. **Think & Generate** — Use extended thinking to produce a self-contained, professional task spec
-5. **Verify & Write** — Self-review for traceability, measurability, self-containment, and consistency before writing
+- **Task listing:** Query, filter, sort, and summarize tasks with `/projectask-list`
 
 ## Commands
 
@@ -34,8 +24,10 @@ The `/projectask` command runs a 5-phase pipeline:
 
 ## Usage
 
+### Creating tasks
+
 ```bash
-# Create a task (default output to .projectasks/task001-login-page.md)
+# Create a task (default output to .projectasks/task001-<slug>.md)
 /projectask "Create a new login page component"
 
 # Specify a directory
@@ -43,21 +35,64 @@ The `/projectask` command runs a 5-phase pipeline:
 
 # Specify an exact file path
 /projectask docs/tasks/login-page.md "Create login component with OAuth"
+```
 
+### Listing tasks
+
+```bash
 # List all tasks
 /projectask-list
 
-# List only in-progress tasks
+# Filter by status
+/projectask-list --status todo
 /projectask-list --status in-progress
+
+# Filter by priority or tag
+/projectask-list --priority high
+/projectask-list --tag feature
+
+# Show only the N most recent tasks
+/projectask-list --latest 5
+
+# Sort by different fields
+/projectask-list --sort priority --order asc
+/projectask-list --sort due
+
+# Scan a different directory
+/projectask-list --dir src/tasks
 
 # Show summary overview
 /projectask-list --summary
+```
 
-# Start working on a task
+### Starting tasks
+
+```bash
+# Start a specific task
 /projectask-start .projectasks/task001-login-page.md
 
+# Auto-pick the latest todo task
+/projectask-start --latest
+
+# Interactive — lists todo tasks if multiple exist
+/projectask-start
+```
+
+### Completing tasks
+
+```bash
 # Mark a task as done
 /projectask-done .projectasks/task001-login-page.md
+
+# Auto-pick the latest in-progress task
+/projectask-done --latest
+
+# Set a specific status
+/projectask-done .projectasks/task001-login-page.md --status blocked
+/projectask-done .projectasks/task001-login-page.md --status cancelled
+
+# Interactive — lists in-progress tasks if multiple exist
+/projectask-done
 ```
 
 ## Installation
@@ -76,6 +111,16 @@ ln -s ~/Projects/projectask/commands/projectask-done.md ~/.claude/commands/proje
 # Symlink the auto-triggered skill
 ln -s ~/Projects/projectask/skills/projectask ~/.claude/skills/projectask
 ```
+
+## How It Works
+
+The `/projectask` command runs a 5-phase pipeline:
+
+1. **Parse** — Extract output path and task description from arguments
+2. **Analyze** — Identify task type, check for ambiguity, assess scope
+3. **Gather Context** — Read project config, CLAUDE.md, tech stack, relevant source files
+4. **Think & Generate** — Use extended thinking to produce a self-contained, professional task spec
+5. **Verify & Write** — Self-review for traceability, measurability, self-containment, and consistency before writing
 
 ## Structure
 
@@ -136,6 +181,7 @@ tags: [feature, auth]
 
 ## Testing Strategy
 - **Unit tests:** [what and where]
+- **Integration tests:** [if applicable]
 - **Verification command:** `[exact command]`
 
 ## Technical Notes
@@ -153,6 +199,29 @@ tags: [feature, auth]
 | `completed` | ISO 8601 | When work finished (set by `/projectask-done`) |
 | `due` | ISO 8601 | Deadline, if specified |
 | `tags` | list | Categorization labels |
+
+### `/projectask-list` Flags
+
+| Flag | Short | Values | Default | Description |
+|------|-------|--------|---------|-------------|
+| `--status` | `-s` | `todo`, `in-progress`, `blocked`, `done`, `cancelled` | all | Filter by status |
+| `--priority` | `-p` | `critical`, `high`, `medium`, `low` | all | Filter by priority |
+| `--tag` | `-t` | any string | all | Filter by tag |
+| `--latest` | `-l` | integer N | all | Show only N most recent tasks |
+| `--sort` | | `created`, `priority`, `status`, `due` | `created` | Sort field |
+| `--order` | | `asc`, `desc` | `desc` | Sort direction |
+| `--dir` | `-d` | directory path | `.projectasks/` | Directory to scan |
+| `--summary` | | flag | off | Show high-level summary |
+
+### `/projectask-done` Statuses
+
+| Status | Effect |
+|--------|--------|
+| `done` (default) | Sets `completed` timestamp |
+| `in-progress` | Sets `started` timestamp |
+| `blocked` | Marks as blocked |
+| `cancelled` | Sets `completed` timestamp |
+| `todo` | Resets to todo, clears timestamps |
 
 ## License
 
