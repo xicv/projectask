@@ -1,17 +1,18 @@
 ---
-description: "Mark a projectask task as in-progress and begin working on it. Shorthand for /projectask-done --status in-progress."
+description: "Mark a projectask task as in-progress and begin working on it. Shorthand for done --status in-progress."
+argument-hint: [path/to/task.md] [--latest]
 ---
 
-# /projectask-start - Start Working on a Task
+# Start Working on a Task
 
-Mark a task file as in-progress and set the `started` timestamp. This is a convenience shorthand.
+Mark a task file as in-progress and set the `started` timestamp. This is a convenience shorthand for the done command with `--status in-progress`.
 
 ## Usage
 
 ```
-/projectask-start
-/projectask-start path/to/task.md
-/projectask-start --latest
+start
+start path/to/task.md
+start --latest
 ```
 
 **Input:** $ARGUMENTS

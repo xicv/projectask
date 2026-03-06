@@ -1,18 +1,19 @@
 ---
 description: "Mark a projectask task file as done or update its status. Updates YAML frontmatter metadata and timestamps."
+argument-hint: [path/to/task.md] [--status done]
 ---
 
-# /projectask-done - Update Task Status
+# Update Task Status
 
 Mark a task file as done (or update to any status) by modifying its YAML frontmatter metadata.
 
 ## Usage
 
 ```
-/projectask-done
-/projectask-done path/to/task.md
-/projectask-done path/to/task.md --status in-progress
-/projectask-done --latest
+done
+done path/to/task.md
+done path/to/task.md --status in-progress
+done --latest
 ```
 
 **Input:** $ARGUMENTS

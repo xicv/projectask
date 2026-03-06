@@ -1,17 +1,18 @@
 ---
 description: "Generate professional, LLM-executable task files from rough ideas. Accepts optional path and task description."
+argument-hint: [path] "task description"
 ---
 
-# /projectask - Generate Professional Task Files
+# Generate Professional Task Files
 
 Transform rough ideas, descriptions, or feature requests into professional, engineering-level task markdown files that another engineer or LLM can execute without ambiguity.
 
 ## Usage
 
 ```
-/projectask "task description"
-/projectask path/to/dir "task description"
-/projectask path/to/file.md "task description"
+create "task description"
+create path/to/dir "task description"
+create path/to/file.md "task description"
 ```
 
 **Input:** $ARGUMENTS

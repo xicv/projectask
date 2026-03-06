@@ -51,9 +51,11 @@ install() {
 
   mkdir -p "$COMMANDS_DIR" "$SKILLS_DIR"
 
-  for cmd in projectask projectask-list projectask-start projectask-done; do
-    link "$REPO_DIR/commands/$cmd.md" "$COMMANDS_DIR/$cmd.md"
-  done
+  # Map renamed source files to original command names for backward compatibility
+  link "$REPO_DIR/commands/create.md" "$COMMANDS_DIR/projectask.md"
+  link "$REPO_DIR/commands/list.md" "$COMMANDS_DIR/projectask-list.md"
+  link "$REPO_DIR/commands/start.md" "$COMMANDS_DIR/projectask-start.md"
+  link "$REPO_DIR/commands/done.md" "$COMMANDS_DIR/projectask-done.md"
 
   link "$REPO_DIR/skills/projectask" "$SKILLS_DIR/projectask"
 
