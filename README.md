@@ -99,8 +99,9 @@ A Claude Code plugin that transforms rough ideas into professional, engineering-
 
 ### Plugin (recommended)
 
-```bash
-claude plugin add xicv/projectask
+```
+/plugin marketplace add xicv/projectask
+/plugin install projectask@xicv-projectask
 ```
 
 ### Symlink (alternative)
