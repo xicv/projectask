@@ -130,7 +130,7 @@ Gives `/projectask:create`, `/projectask:list`, `/projectask:start`, `/projectas
 
 ### Symlink (alternative)
 
-Also gives `/projectask:create`, `/projectask:list`, `/projectask:start`, `/projectask:done`:
+Gives `/projectask-create`, `/projectask-list`, `/projectask-start`, `/projectask-done`:
 
 ```bash
 git clone https://github.com/xicv/projectask.git ~/Projects/projectask

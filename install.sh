@@ -4,7 +4,7 @@ set -euo pipefail
 # projectask installer
 # Creates symlinks in ~/.claude/skills for projectask skills
 #
-# Gives: /projectask:create, /projectask:list, /projectask:done, /projectask:start
+# Gives: /projectask-create, /projectask-list, /projectask-done, /projectask-start
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 CLAUDE_DIR="$HOME/.claude"
@@ -52,29 +52,29 @@ install() {
 
   mkdir -p "$SKILLS_DIR"
 
-  # Skills — gives /projectask:create, /projectask:list, /projectask:done, /projectask:start
+  # Skills — gives /projectask-create, /projectask-list, /projectask-done, /projectask-start
   for skill in create list done start; do
-    link "$REPO_DIR/skills/$skill" "$SKILLS_DIR/projectask:$skill"
+    link "$REPO_DIR/skills/$skill" "$SKILLS_DIR/projectask-$skill"
   done
 
   echo ""
   echo -e "${GREEN}Done!${NC} 4 skills installed."
   echo ""
-  echo "  /projectask:create  /projectask:list  /projectask:done  /projectask:start"
+  echo "  /projectask-create  /projectask-list  /projectask-done  /projectask-start"
 }
 
 uninstall() {
   echo "Uninstalling projectask..."
   echo ""
 
-  # Remove skill symlinks (colon format)
-  for skill in create list done start; do
-    unlink "$SKILLS_DIR/projectask:$skill"
-  done
-
-  # Clean up old symlink formats if present
+  # Remove skill symlinks
   for skill in create list done start; do
     unlink "$SKILLS_DIR/projectask-$skill"
+  done
+
+  # Clean up old colon-format symlinks if present
+  for skill in create list done start; do
+    unlink "$SKILLS_DIR/projectask:$skill"
   done
   unlink "$SKILLS_DIR/projectask"
 
