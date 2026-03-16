@@ -2,20 +2,12 @@
 set -euo pipefail
 
 # projectask installer
-# Creates symlinks in ~/.claude for skills (and optionally legacy commands)
+# Creates symlinks in ~/.claude/skills for projectask skills
 #
-# Plugin installation (recommended):
-#   /plugin marketplace add xicv/projectask
-#   /plugin install projectask@xicv-projectask
-#   → gives /projectask:create, /projectask:list, /projectask:done, /projectask:start
-#
-# Symlink installation (this script):
-#   ./install.sh
-#   → gives /projectask:create, /projectask:list, /projectask:done, /projectask:start
+# Gives: /projectask:create, /projectask:list, /projectask:done, /projectask:start
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 CLAUDE_DIR="$HOME/.claude"
-COMMANDS_DIR="$CLAUDE_DIR/commands"
 SKILLS_DIR="$CLAUDE_DIR/skills"
 
 RED='\033[0;31m'
@@ -80,17 +72,10 @@ uninstall() {
     unlink "$SKILLS_DIR/projectask:$skill"
   done
 
-  # Remove old dash-format skill symlinks if present
+  # Clean up old symlink formats if present
   for skill in create list done start; do
     unlink "$SKILLS_DIR/projectask-$skill"
   done
-
-  # Remove legacy command symlinks
-  for cmd in projectask projectask-list projectask-start projectask-done; do
-    unlink "$COMMANDS_DIR/$cmd.md"
-  done
-
-  # Remove old-style skill symlink if present
   unlink "$SKILLS_DIR/projectask"
 
   echo ""

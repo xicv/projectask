@@ -210,11 +210,6 @@ projectask/
 │   │   └── SKILL.md               # Start a task
 │   └── done/
 │       └── SKILL.md               # Complete a task
-├── commands/                      # Legacy command files
-│   ├── create.md
-│   ├── list.md
-│   ├── start.md
-│   └── done.md
 └── docs/
     └── plans/                     # Design and implementation docs
 ```
