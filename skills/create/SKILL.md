@@ -1,6 +1,8 @@
 ---
-name: projectask
+name: create
 description: Generate professional, LLM-executable task markdown files from rough ideas or descriptions. Use this skill when the user wants to create a task file, write a task specification, generate a requirements document, turn an idea into an actionable task, or asks to "write a task", "create a task file", "make a task spec", "document this as a task", or "turn this into an implementation spec". Also triggers when user says "projectask" or mentions generating implementation-ready task documentation. Do NOT use for general conversation about tasks or project management — only when the user wants a task file written to disk.
+argument-hint: [path] [--category <cat>] "task description"
+allowed-tools: Read, Grep, Glob, Bash(mkdir *), Bash(ls *), Bash(pwd), Write
 ---
 
 # projectask — Professional Task File Generator
@@ -18,11 +20,34 @@ Transform rough ideas, descriptions, or feature requests into professional, engi
 
 ## Process
 
-### 1. Identify Input and Output Path
+### 1. Parse Arguments and Detect Category
 
 The user provides:
 - A rough idea, description, or feature request (required)
 - Optionally: a target file path (`.md`) or directory for the output
+- Optionally: a category via `--category <cat>`, `-c <cat>`, or as a leading keyword
+
+#### Category Extraction (in priority order)
+
+1. **Explicit flag**: `--category <value>` or `-c <value>` → extract as category, remove from arguments
+2. **Keyword match**: If the first word of the description (after path extraction) matches a known category keyword, extract it as the category:
+
+| Keywords | Canonical Category |
+|----------|-------------------|
+| `feature`, `feat` | `feature` |
+| `bugfix`, `bug`, `fix` | `bugfix` |
+| `refactor`, `refac` | `refactor` |
+| `docs`, `doc`, `documentation` | `docs` |
+| `test`, `testing` | `test` |
+| `chore` | `chore` |
+| `infra`, `infrastructure` | `infrastructure` |
+| `perf`, `performance` | `performance` |
+| `security`, `sec` | `security` |
+| `style`, `ui`, `design` | `ui` |
+| `ci`, `cd`, `devops` | `devops` |
+| `spike`, `research` | `research` |
+
+3. **Inferred**: If no category found above, infer during Step 2 from task type analysis
 
 #### Path Detection Rules
 
@@ -34,9 +59,14 @@ If no path is specified, default to `.projectasks/` with auto-increment naming.
 
 **Ask the user** if the output path is unclear from context.
 
+#### Directory Resolution
+
+- **With category**: `<base-dir>/<category>/task<NNN>-<slug>.md`
+- **Without category**: `<base-dir>/task<NNN>-<slug>.md` (backward compatible)
+
 #### Auto-Increment File Naming
 
-When writing to a directory (including `.projectasks/` default):
+When writing to a directory (including `.projectasks/` default, with or without category subdirectory):
 
 1. Create the directory if it does not exist: `mkdir -p <target-dir>`
 2. Run: `ls <target-dir>/task*.md 2>/dev/null`
@@ -51,8 +81,9 @@ When writing to a directory (including `.projectasks/` default):
 Think hard about the user's input before generating anything. Identify:
 
 1. **Task type**: API feature, UI component, CLI tool, database migration, refactor, bugfix, infrastructure, or documentation?
-2. **Ambiguity check**: Are there open design decisions? If critical, ask the user. If minor, document as an assumption.
-3. **Scope assessment**: Single-session or multi-task? If >10 files affected, recommend decomposition.
+2. **Category inference** (if not already determined): Map the task type to a category. Always assign a category — if uncertain, default to `feature`.
+3. **Ambiguity check**: Are there open design decisions? If critical, ask the user. If minor, document as an assumption.
+4. **Scope assessment**: Single-session or multi-task? If >10 files affected, recommend decomposition.
 
 ### 3. Gather Project Context
 
@@ -84,10 +115,12 @@ Use extended thinking to produce a high-quality, self-contained task file. The r
 ---
 status: todo
 priority: medium
+category: <category>
 created: YYYY-MM-DDTHH:MM:SS
 started:
 completed:
 due:
+branch:
 tags: []
 ---
 
@@ -154,10 +187,12 @@ Include known gotchas, suggested approach, performance/security concerns.]
 
 - **status**: Always `todo` on creation
 - **priority**: Infer from user's language — "urgent"/"ASAP"/"critical" → `high`, "when you get a chance"/"low priority" → `low`, otherwise → `medium`. Valid values: `critical`, `high`, `medium`, `low`
+- **category**: The resolved category from step 1 or 2. Always lowercase, single word. Must be one of the canonical categories from the keyword table, or a custom single-word category if none fit
 - **created**: Current timestamp in ISO 8601 (YYYY-MM-DDTHH:MM:SS)
-- **started**: Leave empty
-- **completed**: Leave empty
+- **started**: Leave empty (filled by `/projectask:start`)
+- **completed**: Leave empty (filled by `/projectask:done`)
 - **due**: Extract from user input if mentioned, otherwise leave empty
+- **branch**: Leave empty (filled by `/projectask:start` with current git branch)
 - **tags**: Extract relevant tags — task type (e.g., `feature`, `bugfix`, `refactor`), area (e.g., `auth`, `api`, `ui`), or user-specified labels. Format as YAML list.
 
 ### 5. Verify and Write
@@ -168,11 +203,11 @@ Before writing, self-review:
 2. **Measurability**: Every acceptance criterion is verifiable by command or observable behavior
 3. **Self-containment**: Executable by someone with codebase access but zero conversation context
 4. **Consistency**: Requirements and acceptance criteria align — no orphans in either direction
-5. **Metadata completeness**: YAML frontmatter filled correctly, `created` set to current timestamp
+5. **Metadata completeness**: YAML frontmatter filled correctly, `created` set to current timestamp, `category` set
 
 After verification:
 
-1. Create target directory if needed (`mkdir -p`)
+1. Create target directory if needed (`mkdir -p`) — includes category subdirectory if applicable
 2. Write the content to the resolved path using the Write tool
 3. Report: "Task file created: `<path>`"
-4. Show brief summary: title, requirement count, detected task type, priority
+4. Show brief summary: title, category, requirement count, detected task type, priority

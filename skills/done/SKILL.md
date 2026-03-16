@@ -1,6 +1,8 @@
 ---
-description: "Mark a projectask task file as done or update its status. Updates YAML frontmatter metadata and timestamps."
+name: done
+description: Mark a projectask task file as done or update its status. Updates YAML frontmatter metadata and timestamps.
 argument-hint: [path/to/task.md] [--status done]
+allowed-tools: Read, Edit, Glob, Bash(ls *), Bash(pwd), Bash(git branch *)
 ---
 
 # Update Task Status
@@ -10,10 +12,10 @@ Mark a task file as done (or update to any status) by modifying its YAML frontma
 ## Usage
 
 ```
-done
-done path/to/task.md
-done path/to/task.md --status in-progress
-done --latest
+/projectask:done
+/projectask:done path/to/task.md
+/projectask:done path/to/task.md --status in-progress
+/projectask:done --latest
 ```
 
 **Input:** $ARGUMENTS
@@ -29,7 +31,7 @@ Parse `$ARGUMENTS`:
 3. **No arguments**: Look in `.projectasks/` and all immediate subdirectories (`*/`) for task files with `status: in-progress`
    - Scan: `ls .projectasks/task*.md .projectasks/*/task*.md 2>/dev/null`
    - If exactly one found, use it
-   - If multiple found, list them (showing category from path or frontmatter) and ask the user which one to update
+   - If multiple found, list them (showing category and task number from filename) and ask the user which one to update
    - If none found, list `todo` tasks and ask if the user wants to mark one as done
 
 ## Step 2: Parse the Status

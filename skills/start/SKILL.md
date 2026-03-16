@@ -1,6 +1,8 @@
 ---
-description: "Mark a projectask task as in-progress and begin working on it. Shorthand for done --status in-progress."
+name: start
+description: Mark a projectask task as in-progress and begin working on it. Sets started timestamp and current git branch. Shorthand for done --status in-progress.
 argument-hint: [path/to/task.md] [--latest]
+allowed-tools: Read, Edit, Glob, Bash(ls *), Bash(pwd), Bash(git branch *)
 ---
 
 # Start Working on a Task
@@ -10,9 +12,9 @@ Mark a task file as in-progress, set the `started` timestamp, and record the cur
 ## Usage
 
 ```
-start
-start path/to/task.md
-start --latest
+/projectask:start
+/projectask:start path/to/task.md
+/projectask:start --latest
 ```
 
 **Input:** $ARGUMENTS
@@ -28,7 +30,7 @@ Parse `$ARGUMENTS`:
 3. **No arguments**: Look in `.projectasks/` and all immediate subdirectories (`*/`) for task files with `status: todo`
    - Scan: `ls .projectasks/task*.md .projectasks/*/task*.md 2>/dev/null`
    - If exactly one found, use it
-   - If multiple found, list them sorted by priority (critical first), showing category from path or frontmatter, and ask the user which one to start
+   - If multiple found, list them sorted by priority (critical first), showing category and task number from filename, and ask the user which one to start
    - If none found, report "No pending tasks found in `.projectasks/`"
 
 ## Step 2: Read and Update the Task File

@@ -1,6 +1,6 @@
 ---
-description: "Generate professional, LLM-executable task files from rough ideas. Accepts optional path and task description."
-argument-hint: [path] "task description"
+description: "Generate professional, LLM-executable task files from rough ideas. Accepts optional path, category, and task description."
+argument-hint: [path] [--category <cat>] "task description"
 ---
 
 # Generate Professional Task Files
@@ -13,6 +13,9 @@ Transform rough ideas, descriptions, or feature requests into professional, engi
 create "task description"
 create path/to/dir "task description"
 create path/to/file.md "task description"
+create --category feature "task description"
+create -c bugfix path/to/dir "fix the login redirect"
+create feature "add login page with OAuth"
 ```
 
 **Input:** $ARGUMENTS
@@ -21,23 +24,55 @@ create path/to/file.md "task description"
 
 ## Phase 1: Parse Arguments
 
-Analyze `$ARGUMENTS` to extract two components:
+Analyze `$ARGUMENTS` to extract three components:
 
-1. **Output path** (optional): A file path or directory path
-2. **Task description** (required): Everything else is the raw task idea
+1. **Category** (optional): Explicit flag, keyword match, or inferred from description
+2. **Output path** (optional): A file path or directory path
+3. **Task description** (required): Everything else is the raw task idea
+
+### Category Extraction
+
+Apply in priority order — stop at the first match:
+
+1. **Explicit flag**: If `--category <value>` or `-c <value>` is present, extract the value as the category. Remove the flag and value from arguments before further parsing.
+
+2. **Keyword match**: After path extraction (see below), if the **first word** of the remaining text matches a known category keyword, extract it as the category and use the rest as the task description.
+
+| Keywords | Canonical Category |
+|----------|-------------------|
+| `feature`, `feat` | `feature` |
+| `bugfix`, `bug`, `fix` | `bugfix` |
+| `refactor`, `refac` | `refactor` |
+| `docs`, `doc`, `documentation` | `docs` |
+| `test`, `testing` | `test` |
+| `chore` | `chore` |
+| `infra`, `infrastructure` | `infrastructure` |
+| `perf`, `performance` | `performance` |
+| `security`, `sec` | `security` |
+| `style`, `ui`, `design` | `ui` |
+| `ci`, `cd`, `devops` | `devops` |
+| `spike`, `research` | `research` |
+
+3. **Inferred (Phase 2 fallback)**: If no category from the above, infer during Phase 2 based on task type analysis (e.g., bug description → `bugfix`, new endpoint → `feature`, code cleanup → `refactor`).
 
 ### Path Detection Rules
 
-The **first token** (whitespace-delimited) of `$ARGUMENTS` is treated as an output path only if it meets ANY of these criteria:
+The **first token** (whitespace-delimited) of the remaining arguments (after removing any explicit category flag) is treated as an output path only if it meets ANY of these criteria:
 - Ends in `.md` → use as the **exact output file path**
 - Starts with `/`, `./`, or `../` → use as the **output directory** with auto-increment naming
 - Contains `/` and has no whitespace → use as the **output directory** with auto-increment naming
 
-If the first token does not match any of the above, treat ALL of `$ARGUMENTS` as the **task description** and default the output directory to `.projectasks/`.
+If the first token does not match any of the above, treat ALL remaining arguments as the **task description** and default the output directory to `.projectasks/`.
+
+### Directory Resolution
+
+- **With category**: Target directory becomes `<base-dir>/<category>/`
+  - Example: `.projectasks/feature/task001-add-login.md`
+- **Without category** (rare — inference should catch most cases): `<base-dir>/task<NNN>-<slug>.md` directly (backward compatible)
 
 ### Auto-Increment File Naming
 
-When using a directory (including the `.projectasks/` default):
+When using a directory (including the `.projectasks/` default, with or without category subdirectory):
 
 1. Create the directory if it does not exist: `mkdir -p <target-dir>`
 2. Run: `ls <target-dir>/task*.md 2>/dev/null`
@@ -52,10 +87,11 @@ When using a directory (including the `.projectasks/` default):
 Think hard about the user's raw input before generating anything. Identify:
 
 1. **Task type**: Is this an API feature, UI component, CLI tool, database migration, refactor, bugfix, infrastructure, or documentation task? The type determines which sections need the most depth.
-2. **Ambiguity check**: Are there design decisions the user has left open? If so, either:
+2. **Category inference** (if not already determined in Phase 1): Map the detected task type to a category using the keyword table above. Always assign a category — if uncertain, default to `feature`.
+3. **Ambiguity check**: Are there design decisions the user has left open? If so, either:
    - Ask the user to clarify (if the ambiguity is critical and has multiple valid answers), OR
    - Document the assumption explicitly in the output's "Assumptions" section
-3. **Scope assessment**: Is this a single-session task or does it need to be broken into sub-tasks? If the task would require modifying more than 10 files, recommend decomposition in the Technical Notes.
+4. **Scope assessment**: Is this a single-session task or does it need to be broken into sub-tasks? If the task would require modifying more than 10 files, recommend decomposition in the Technical Notes.
 
 ## Phase 3: Gather Project Context
 
@@ -89,10 +125,12 @@ Write the file using this exact structure:
 ---
 status: todo
 priority: medium
+category: <category>
 created: YYYY-MM-DDTHH:MM:SS
 started:
 completed:
 due:
+branch:
 tags: []
 ---
 
@@ -167,10 +205,12 @@ from the project context. Include:
 
 - **status**: Always set to `todo` on creation
 - **priority**: Infer from user's language — "urgent"/"ASAP"/"critical" → `high`, "when you get a chance"/"low priority" → `low`, otherwise → `medium`. Valid values: `critical`, `high`, `medium`, `low`
+- **category**: The resolved category from Phase 1 or Phase 2. Always lowercase, single word. Must be one of the canonical categories from the keyword table, or a custom single-word category if none fit
 - **created**: Current timestamp in ISO 8601 format (YYYY-MM-DDTHH:MM:SS)
-- **started**: Leave empty (filled when work begins)
-- **completed**: Leave empty (filled when work is done)
+- **started**: Leave empty (filled by `/projectask:start`)
+- **completed**: Leave empty (filled by `/projectask:done`)
 - **due**: Extract from user input if mentioned (e.g., "by Friday", "end of sprint"), otherwise leave empty
+- **branch**: Leave empty (filled by `/projectask:start` with current git branch)
 - **tags**: Extract relevant tags from context — task type (e.g., `feature`, `bugfix`, `refactor`), area (e.g., `auth`, `api`, `ui`), or user-specified labels. Format as YAML list.
 
 ## Phase 5: Verify and Write
@@ -181,11 +221,11 @@ Before writing the file, self-review the generated content:
 2. **Measurability**: Is every acceptance criterion independently verifiable by running a command or checking a specific behavior? Rewrite any that say "should work correctly" or similar vague phrases.
 3. **Self-containment**: Could someone with access to the codebase but zero context from this conversation execute this task? If not, add the missing context.
 4. **Consistency**: Do the requirements and acceptance criteria align? Are there requirements without corresponding criteria or vice versa?
-5. **Metadata completeness**: Is the YAML frontmatter filled in correctly? Is `created` set to the current timestamp?
+5. **Metadata completeness**: Is the YAML frontmatter filled in correctly? Is `created` set to the current timestamp? Is `category` set?
 
 After verification:
 
-1. Create the target directory if it does not exist (`mkdir -p`)
+1. Create the target directory if it does not exist (`mkdir -p`) — this includes the category subdirectory if applicable
 2. Write the generated content to the resolved file path using the Write tool
 3. Report: "Task file created: `<path>`"
-4. Show a brief summary: title, requirement count, detected task type, priority
+4. Show a brief summary: title, category, requirement count, detected task type, priority

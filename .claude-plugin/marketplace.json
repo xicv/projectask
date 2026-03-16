@@ -7,15 +7,15 @@
     {
       "name": "projectask",
       "source": "..",
-      "description": "Generate professional, LLM-executable task files from rough ideas with metadata tracking and lifecycle management",
-      "version": "2.0.0",
+      "description": "Generate professional, LLM-executable task files from rough ideas with category organization, metadata tracking, and lifecycle management",
+      "version": "2.1.0",
       "author": {
         "name": "xicv"
       },
       "homepage": "https://github.com/xicv/projectask",
       "repository": "https://github.com/xicv/projectask",
       "license": "MIT",
-      "keywords": ["task", "specification", "planning", "project-management"]
+      "keywords": ["task", "specification", "planning", "project-management", "category"]
     }
   ]
 }

@@ -2,7 +2,16 @@
 set -euo pipefail
 
 # projectask installer
-# Creates symlinks in ~/.claude for commands and skills
+# Creates symlinks in ~/.claude for skills (and optionally legacy commands)
+#
+# Plugin installation (recommended):
+#   /plugin marketplace add xicv/projectask
+#   /plugin install projectask@xicv-projectask
+#   → gives /projectask:create, /projectask:list, /projectask:done, /projectask:start
+#
+# Symlink installation (this script):
+#   ./install.sh
+#   → gives /projectask:create, /projectask:list, /projectask:done, /projectask:start
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 CLAUDE_DIR="$HOME/.claude"
@@ -49,28 +58,39 @@ install() {
   echo "Installing projectask..."
   echo ""
 
-  mkdir -p "$COMMANDS_DIR" "$SKILLS_DIR"
+  mkdir -p "$SKILLS_DIR"
 
-  # Map renamed source files to original command names for backward compatibility
-  link "$REPO_DIR/commands/create.md" "$COMMANDS_DIR/projectask.md"
-  link "$REPO_DIR/commands/list.md" "$COMMANDS_DIR/projectask-list.md"
-  link "$REPO_DIR/commands/start.md" "$COMMANDS_DIR/projectask-start.md"
-  link "$REPO_DIR/commands/done.md" "$COMMANDS_DIR/projectask-done.md"
-
-  link "$REPO_DIR/skills/projectask" "$SKILLS_DIR/projectask"
+  # Skills — gives /projectask:create, /projectask:list, /projectask:done, /projectask:start
+  for skill in create list done start; do
+    link "$REPO_DIR/skills/$skill" "$SKILLS_DIR/projectask:$skill"
+  done
 
   echo ""
-  echo -e "${GREEN}Done!${NC} 4 commands + 1 skill installed."
+  echo -e "${GREEN}Done!${NC} 4 skills installed."
+  echo ""
+  echo "  /projectask:create  /projectask:list  /projectask:done  /projectask:start"
 }
 
 uninstall() {
   echo "Uninstalling projectask..."
   echo ""
 
+  # Remove skill symlinks (colon format)
+  for skill in create list done start; do
+    unlink "$SKILLS_DIR/projectask:$skill"
+  done
+
+  # Remove old dash-format skill symlinks if present
+  for skill in create list done start; do
+    unlink "$SKILLS_DIR/projectask-$skill"
+  done
+
+  # Remove legacy command symlinks
   for cmd in projectask projectask-list projectask-start projectask-done; do
     unlink "$COMMANDS_DIR/$cmd.md"
   done
 
+  # Remove old-style skill symlink if present
   unlink "$SKILLS_DIR/projectask"
 
   echo ""
